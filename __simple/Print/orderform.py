@@ -15,7 +15,7 @@ from PySide6.QtWidgets import (QApplication, QCheckBox, QDialog,
                                QLineEdit, QMainWindow, QMenu, QMessageBox,
                                QTableWidget, QTableWidgetItem, QTabWidget,
                                QTextEdit)
-from PySide6.QtPrintSupport import QAbstractPrintDialog, QPrintDialog, QPrinter
+from PySide6.QtPrintSupport import QAbstractPrintDialog, QPrintDialog, QPrintPreviewDialog, QPrinter
 
 
 class MainWindow(QMainWindow):
@@ -28,6 +28,9 @@ class MainWindow(QMainWindow):
         self._print_action = file_menu.addAction("&Print...", self.print_file)
         self._print_action.setShortcut("Ctrl+P")
         self._print_action.setEnabled(False)
+
+        self.print_preview_action = file_menu.addAction("&Preview print...", self.printPreview_file)
+                
         quit_action = file_menu.addAction("E&xit")
         quit_action.setShortcut("Ctrl+Q")
         self.menuBar().addMenu(file_menu)
@@ -180,6 +183,17 @@ class MainWindow(QMainWindow):
 
         editor.print_(printer)
 
+    @Slot()
+    def printPreview_file(self):    
+        printer = QPrinter()
+        preview_dialog = QPrintPreviewDialog(printer, self)
+        preview_dialog.paintRequested.connect(self.print_document)
+        preview_dialog.exec()
+
+    def print_document(self, printer):
+        # This function is called by the preview dialog to render each page
+        document = self.letters.currentWidget()
+        document.print_(printer) # QTextDocument has a built-in print_ method    
 
 class DetailsDialog(QDialog):
     def __init__(self, title, parent):
